@@ -2,7 +2,16 @@
 
 一个面向 Windows 7 的 Mihomo 轻量启动器，使用批处理和 PowerShell 管理内核、系统代理与订阅，并通过本机网页界面选择节点、测试延迟。
 
-本项目不是原版 Clash for Windows，也不是 Mihomo 官方客户端。源码仓库提供启动脚本、配置模板和离线 UI，**不包含 Mihomo 内核、代理节点或订阅服务**。Release 压缩包可能附带上游内核；实际能否在 Windows 7 上运行，取决于所用内核是否兼容该系统。
+本项目不是原版 Clash for Windows，也不是 Mihomo 官方客户端。源码仓库提供启动脚本、配置模板和离线 UI，**不包含 Mihomo 内核、代理节点或订阅服务**。`v4.0.0` Release 压缩包附带 Mihomo 上游内核；实际能否在 Windows 7 上运行，取决于所用内核是否兼容该系统。
+
+## Release 快速开始
+
+1. 从 [v4.0.0 Release](https://github.com/happywosabi/clash_for_win7/releases/tag/v4.0.0) 下载 `Mihomo_Win7_Starter_v4_fixed.zip` 并解压到可写目录。压缩包内已包含名为 `mihomo.exe` 的内核，**无需再重命名或单独下载**。
+2. 双击解压目录中的 `Start_Mihomo_Win7_v4.bat`。首次运行时，在命令行输入可被 Mihomo 作为 HTTP 代理提供者读取的订阅地址；脚本会生成本机 `config.yaml`。
+3. 等待内核启动和订阅更新。浏览器会打开本机 UI；若未自动打开，请访问 **http://127.0.0.1:9090/ui/**。
+4. 在 UI 中确认内核及系统代理状态，选择代理组节点。退出时点击“停止 Mihomo”，以便同时关闭系统代理。
+
+订阅地址可能包含私密令牌，请勿上传 `config.yaml`。Release 内核的 Windows 7 兼容性尚未在所有环境中验证；若启动失败，请运行 `Diagnose_v4.bat` 并查看 `mihomo.log`。
 
 ## 功能
 
@@ -15,7 +24,7 @@
 
 ## 运行要求
 
-- Windows 7 电脑，以及与系统架构和 Windows 版本兼容的 `mihomo.exe`。本项目的脚本以 Windows 7 x64 为目标；不要假定 Mihomo 的每个新版本都仍支持 Windows 7。
+- Windows 7 电脑，以及与系统架构和 Windows 版本兼容的 `mihomo.exe`。Release 已包含一个内核；从源码使用时需自行准备。本项目的脚本以 Windows 7 x64 为目标，不要假定 Mihomo 的每个新版本都仍支持 Windows 7。
 - 系统自带的 `cmd.exe`、Windows PowerShell 和可加载 `System.Web.Extensions` 的 .NET Framework 环境。
 - 一个能被 Mihomo `proxy-providers` 作为 HTTP 提供者读取的 Clash/Mihomo 格式订阅地址。普通网页地址或其他客户端专用格式不能直接使用。
 - 对项目目录的写入权限，以及修改当前用户 `HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings` 的权限。
@@ -23,7 +32,7 @@
 
 可以从 [Mihomo 官方发布页](https://github.com/MetaCubeX/mihomo/releases)获取内核；请自行核对所下载版本的 Windows 7 兼容性、架构及上游许可。
 
-## 快速开始
+## 从源码使用
 
 1. 下载或克隆本项目，将所有项目文件放在同一个目录。把自行获取的内核命名为 `mihomo.exe`，放在 `Start_Mihomo_Win7_v4.bat` 旁边。不要把内核放进 `ui` 或 `providers` 目录。
 2. 双击 `Start_Mihomo_Win7_v4.bat`。第一次运行会在命令行提示输入订阅地址，并生成 `config.yaml`。订阅地址可能含有令牌，请勿公开。
@@ -32,10 +41,6 @@
 5. 在 UI 中确认“内核”“系统代理”“控制服务”的状态，然后选择代理组中的节点。需要时使用“测速”或“全部测速”。
 
 首次订阅获取需要网络。更新失败时启动流程仍会继续，你可以查看命令行提示、`mihomo.log`，或在 UI 的“订阅提供者”中再次点击“更新订阅”。
-
-### Release 压缩包说明
-
-`Mihomo_Win7_Starter_v4_fixed.zip` 内的内核文件名为 `mihomo-windows-amd64-v1.exe`。解压后，须将其**重命名为 `mihomo.exe`**，并与启动脚本放在同一目录，否则脚本会提示找不到内核。该内核属于 [Mihomo 上游项目](https://github.com/MetaCubeX/mihomo)，遵循其 [MIT 许可证](https://github.com/MetaCubeX/mihomo/blob/main/LICENSE)；本项目尚未为自己的脚本和 UI 选择许可证。压缩包中的内核是否兼容 Windows 7 尚需按实际系统验证。
 
 ## 日常使用
 
@@ -98,7 +103,7 @@ clash_for_win7/
 
 ### 提示找不到 `mihomo.exe`
 
-确认文件名准确，且与 `Start_Mihomo_Win7_v4.bat` 位于同一目录。项目未打包内核；还要确认下载的版本可在你的 Windows 7 系统上运行。
+确认文件名准确，且与 `Start_Mihomo_Win7_v4.bat` 位于同一目录。源码仓库不包含内核，`v4.0.0` Release 包含名为 `mihomo.exe` 的内核；还要确认内核版本可在你的 Windows 7 系统上运行。
 
 ### 内核没有监听 `127.0.0.1:9090`
 
@@ -134,6 +139,20 @@ UI 和启动脚本会提示这一错误。先检查安全软件的拦截记录�
 - 为兼容本机 UI，脚本将 Mihomo API 设为无密钥，仅监听 `127.0.0.1:9090`；控制服务仅监听 `127.0.0.1:9091`。不要把这些地址改成 `0.0.0.0`、映射到公网，或通过其他方式开放给不可信设备。
 - 启动和停止脚本按进程名处理**所有** `mihomo.exe`，不区分是否由本项目启动。与其他 Mihomo 客户端并用前请注意这一点。
 - 系统代理只影响遵循 Windows 当前用户代理设置的应用；本项目没有安装驱动，也不保证接管所有程序的流量。
+
+## Mihomo 上游许可证
+
+Release 中的 `mihomo.exe` 属于 [MetaCubeX/mihomo](https://github.com/MetaCubeX/mihomo)，其 [上游许可证](https://github.com/MetaCubeX/mihomo/blob/main/LICENSE) 为 MIT。以下保留上游的完整版权及许可声明；它**仅适用于 Mihomo 上游软件**，不代表本项目脚本和 UI 已取得 MIT 授权。
+
+```text
+Copyright 2023 KT
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+```
 
 ## 开源发布前检查
 
