@@ -2,7 +2,7 @@
 
 一个面向 Windows 7 的 Mihomo 轻量启动器，使用批处理和 PowerShell 管理内核、系统代理与订阅，并通过本机网页界面选择节点、测试延迟。
 
-本项目不是原版 Clash for Windows，也不是 Mihomo 官方客户端。仓库提供启动脚本、配置模板和离线 UI，**不提供 Mihomo 内核、代理节点或订阅服务**。实际能否在 Windows 7 上运行，取决于你使用的 `mihomo.exe` 是否兼容该系统。
+本项目不是原版 Clash for Windows，也不是 Mihomo 官方客户端。源码仓库提供启动脚本、配置模板和离线 UI，**不包含 Mihomo 内核、代理节点或订阅服务**。Release 压缩包可能附带上游内核；实际能否在 Windows 7 上运行，取决于所用内核是否兼容该系统。
 
 ## 功能
 
@@ -32,6 +32,10 @@
 5. 在 UI 中确认“内核”“系统代理”“控制服务”的状态，然后选择代理组中的节点。需要时使用“测速”或“全部测速”。
 
 首次订阅获取需要网络。更新失败时启动流程仍会继续，你可以查看命令行提示、`mihomo.log`，或在 UI 的“订阅提供者”中再次点击“更新订阅”。
+
+### Release 压缩包说明
+
+`Mihomo_Win7_Starter_v4_fixed.zip` 内的内核文件名为 `mihomo-windows-amd64-v1.exe`。解压后，须将其**重命名为 `mihomo.exe`**，并与启动脚本放在同一目录，否则脚本会提示找不到内核。该内核属于 [Mihomo 上游项目](https://github.com/MetaCubeX/mihomo)，遵循其 [MIT 许可证](https://github.com/MetaCubeX/mihomo/blob/main/LICENSE)；本项目尚未为自己的脚本和 UI 选择许可证。压缩包中的内核是否兼容 Windows 7 尚需按实际系统验证。
 
 ## 日常使用
 
