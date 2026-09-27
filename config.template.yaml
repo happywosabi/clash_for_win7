@@ -1,0 +1,47 @@
+mixed-port: 7890
+allow-lan: false
+mode: rule
+log-level: info
+ipv6: false
+
+external-controller: 127.0.0.1:9090
+secret: ""
+external-ui: "./ui"
+
+profile:
+  store-selected: true
+  store-fake-ip: true
+
+proxy-providers:
+  pqjc:
+    type: http
+    url: "__SUBSCRIPTION_URL__"
+    path: "./providers/pqjc.yaml"
+    interval: 3600
+    proxy: DIRECT
+    health-check:
+      enable: true
+      url: "https://www.gstatic.com/generate_204"
+      interval: 300
+      timeout: 5000
+      lazy: true
+
+proxy-groups:
+  - name: "PROXY"
+    type: select
+    proxies:
+      - "AUTO"
+      - "DIRECT"
+    use:
+      - pqjc
+
+  - name: "AUTO"
+    type: url-test
+    use:
+      - pqjc
+    url: "https://www.gstatic.com/generate_204"
+    interval: 300
+    tolerance: 80
+
+rules:
+  - MATCH,PROXY

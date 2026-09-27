@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mihomo 控制台</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; background: #f7f8f7; color: #202b2b; font: 14px/1.55 Arial, "Microsoft YaHei", sans-serif; }
+button, select { font: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: .48; }
+.shell { max-width: 1080px; margin: 0 auto; padding: 0 28px 40px; }
+.topbar { border-bottom: 1px solid #dfe5e3; background: #fff; }
+.topbar-inner { max-width: 1080px; margin: 0 auto; padding: 22px 28px; display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+.brand { display: flex; align-items: center; gap: 13px; min-width: 0; }
+.mark { width: 38px; height: 38px; flex: 0 0 38px; border-radius: 7px; background: #173e3a; color: #fff; font-size: 20px; font-weight: bold; text-align: center; line-height: 38px; }
+.brand h1 { margin: 0; font-size: 20px; line-height: 1.2; }
+.brand p { margin: 2px 0 0; color: #788584; font-size: 12px; }
+.button { min-height: 34px; padding: 6px 13px; border: 1px solid #cbd6d2; border-radius: 5px; background: #fff; color: #29433e; white-space: nowrap; }
+.button:hover:not(:disabled) { background: #eef4f1; border-color: #96aaa2; }
+.button:focus, select:focus { outline: 2px solid #69a79a; outline-offset: 2px; }
+.button-primary { background: #205b52; border-color: #205b52; color: #fff; }
+.button-primary:hover:not(:disabled) { background: #184a43; border-color: #184a43; }
+.button-danger { color: #ad493f; border-color: #e3c7c2; }
+.button-danger:hover:not(:disabled) { background: #fcf0ee; border-color: #d6958a; }
+.overview { padding: 25px 0 22px; display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+.overview h2 { margin: 0; font-size: 22px; line-height: 1.3; }
+.overview p { margin: 4px 0 0; color: #71817d; font-size: 13px; }
+.overview-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.status-strip { display: flex; flex-wrap: wrap; border: 1px solid #dce4e0; border-radius: 6px; background: #fff; }
+.status-item { flex: 1 1 220px; min-width: 0; padding: 15px 20px; border-right: 1px solid #e8eeeb; }
+.status-item:last-child { border-right: 0; }
+.status-label { color: #74827d; font-size: 12px; }
+.status-value { display: flex; align-items: center; gap: 8px; margin-top: 3px; font-weight: bold; }
+.dot { width: 8px; height: 8px; flex: 0 0 8px; border-radius: 50%; background: #abb7b1; }
+.dot.ok { background: #2e9b68; }
+.dot.warn { background: #d79539; }
+.dot.bad { background: #d2685b; }
+.notice { display: none; margin-top: 16px; padding: 12px 15px; border-left: 3px solid #d9983d; background: #fff8e9; color: #765522; }
+.notice.visible { display: block; }
+.message { min-height: 23px; margin: 12px 0 0; color: #526d65; font-size: 13px; }
+.message.error { color: #ad493f; }
+.section { margin-top: 28px; }
+.section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; margin-bottom: 11px; }
+.section-tools { display: flex; align-items: center; gap: 10px; }
+.section h2 { margin: 0; font-size: 16px; line-height: 1.4; }
+.section-meta { color: #82908b; font-size: 12px; }
+.list { border-top: 1px solid #dce4e0; }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 64px; padding: 12px 4px; border-bottom: 1px solid #e2e9e5; }
+.row-main { min-width: 0; }
+.row-title { font-weight: bold; overflow-wrap: anywhere; }
+.row-detail { margin-top: 2px; color: #788680; font-size: 12px; overflow-wrap: anywhere; }
+.row-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; min-width: 0; }
+.row select { width: 240px; max-width: 42vw; min-height: 34px; padding: 5px 9px; border: 1px solid #cbd6d2; border-radius: 5px; background: #fff; color: #263834; }
+.node-list { max-height: 500px; overflow-y: auto; }
+.latency { min-width: 75px; color: #82908b; text-align: right; white-space: nowrap; font-size: 12px; }
+.latency.good { color: #23845a; }
+.latency.medium { color: #a96f22; }
+.latency.bad { color: #b9564b; }
+.test-button, #testAllButton { min-width: 76px; }
+#testAllButton { min-width: 110px; }
+.empty { padding: 22px 4px; border-bottom: 1px solid #e2e9e5; color: #81908a; }
+.footer { margin-top: 32px; padding-top: 18px; border-top: 1px solid #dce4e0; color: #87948e; font-size: 12px; }
+@media (max-width: 680px) {
+  .shell { padding: 0 16px 30px; }
+  .topbar-inner { padding: 17px 16px; flex-wrap: wrap; }
+  .brand { flex: 1 1 100%; }
+  .topbar-inner > .button { margin-left: auto; }
+  .brand h1 { font-size: 18px; }
+  .overview { display: block; padding: 22px 0 18px; }
+  .overview-actions { justify-content: flex-start; margin-top: 15px; }
+  .status-item { flex-basis: 100%; border-right: 0; border-bottom: 1px solid #e8eeeb; }
+  .status-item:last-child { border-bottom: 0; }
+  .row { align-items: stretch; flex-direction: column; gap: 10px; }
+  .row-actions { justify-content: flex-start; }
+  .row select { flex: 1 1 auto; width: 100%; max-width: none; }
+}
+</style>
+</head>
+<body>
+<header class="topbar"><div class="topbar-inner">
+  <div class="brand"><div class="mark" aria-hidden="true">M</div><div><h1>Mihomo</h1><p>Windows 7 本地控制台</p></div></div>
+  <button class="button" id="refreshButton" type="button">刷新状态</button>
+</div></header>
+<main class="shell">
+  <div class="overview">
+    <div><h2>连接概览</h2><p>管理当前设备的代理连接与节点</p></div>
+    <div class="overview-actions">
+      <button class="button" id="proxyButton" type="button" disabled>关闭系统代理</button>
+      <button class="button button-danger" id="stopButton" type="button" disabled>停止 Mihomo</button>
+    </div>
+  </div>
+  <div class="status-strip" aria-live="polite">
+    <div class="status-item"><div class="status-label">Mihomo 内核</div><div class="status-value"><span class="dot" id="coreDot"></span><span id="coreStatus">检查中</span></div></div>
+    <div class="status-item"><div class="status-label">系统代理</div><div class="status-value"><span class="dot" id="proxyDot"></span><span id="proxyStatus">检查中</span></div></div>
+    <div class="status-item"><div class="status-label">本机控制服务</div><div class="status-value"><span class="dot" id="controlDot"></span><span id="controlStatus">检查中</span></div></div>
+  </div>
+  <div class="notice" id="warning" role="alert">系统拒绝创建 <strong>ProxyServer</strong> 注册表值。请暂时关闭杀毒软件，点击“启用系统代理”重试，完成后重新开启杀毒软件。</div>
+  <p class="message" id="message" role="status" aria-live="polite"></p>
+  <section class="section" aria-labelledby="groupsTitle"><div class="section-head"><h2 id="groupsTitle">代理组</h2><span class="section-meta" id="groupsCount"></span></div><div class="list" id="groups"><div class="empty">正在加载代理组…</div></div></section>
+  <section class="section" aria-labelledby="nodesTitle"><div class="section-head"><h2 id="nodesTitle">节点测速</h2><div class="section-tools"><span class="section-meta" id="nodesCount"></span><button class="button" id="testAllButton" type="button" disabled>全部测速</button></div></div><div class="list node-list" id="nodes"><div class="empty">正在加载节点…</div></div></section>
+  <section class="section" aria-labelledby="providersTitle"><div class="section-head"><h2 id="providersTitle">订阅提供者</h2><span class="section-meta" id="providersCount"></span></div><div class="list" id="providers"><div class="empty">正在加载订阅…</div></div></section>
+  <footer class="footer"><span id="version">Mihomo 版本检查中</span></footer>
+</main>
+<script>
+(function () {
+  var controlUrl = 'http://127.0.0.1:9091';
+  var proxyEnabled = false, coreRunning = false, controlReady = false, stopped = false, statusTimer;
+  var nodeEntries = [], nodeStates = {}, nodeElements = {}, allTesting = false, activeNodeTests = 0;
+  var delayQuery = '?url=' + encodeURIComponent('https://www.gstatic.com/generate_204') + '&timeout=5000';
+  function el(id) { return document.getElementById(id); }
+  function setText(id, value) { el(id).textContent = value; }
+  function showMessage(value, error) { setText('message', value); el('message').className = error ? 'message error' : 'message'; }
+  function setState(name, value, tone) { setText(name + 'Status', value); el(name + 'Dot').className = 'dot' + (tone ? ' ' + tone : ''); }
+  function empty(container, value) { container.innerHTML = ''; var item = document.createElement('div'); item.className = 'empty'; item.textContent = value; container.appendChild(item); }
+  function request(method, url, body, control, done) {
+    var xhr = new XMLHttpRequest(), finished = false;
+    xhr.open(method, url, true);
+    xhr.timeout = 7000;
+    if (control && method === 'POST') xhr.setRequestHeader('X-Mihomo-Control', '1');
+    if (body !== null) xhr.setRequestHeader('Content-Type', 'application/json');
+    function finish(status, response) { if (!finished) { finished = true; done(status, response); } }
+    xhr.onreadystatechange = function () { if (xhr.readyState === 4) finish(xhr.status, xhr.responseText); };
+    xhr.onerror = function () { finish(0, ''); };
+    xhr.ontimeout = function () { finish(0, ''); };
+    xhr.send(body);
+  }
+  function parse(value) { try { return JSON.parse(value); } catch (error) { return null; } }
+  function updateButtons() {
+    var button = el('proxyButton');
+    button.disabled = !controlReady || stopped || (!coreRunning && !proxyEnabled);
+    button.textContent = proxyEnabled ? '关闭系统代理' : '启用系统代理';
+    button.className = proxyEnabled ? 'button' : 'button button-primary';
+    el('stopButton').disabled = !controlReady || !coreRunning || stopped;
+  }
+  function loadStatus() {
+    if (stopped) return;
+    request('GET', controlUrl + '/status', null, true, function (status, response) {
+      var data = parse(response);
+      controlReady = status === 200 && !!data;
+      if (!controlReady) { setState('control', '未连接', 'bad'); setState('proxy', '无法读取', 'warn'); updateButtons(); return; }
+      coreRunning = !!data.coreRunning;
+      proxyEnabled = !!data.proxyEnabled;
+      setState('control', '已连接', 'ok');
+      setState('core', coreRunning ? '运行中' : '已停止', coreRunning ? 'ok' : 'bad');
+      setState('proxy', proxyEnabled ? '已开启 · ' + (data.proxyServer || '127.0.0.1:7890') : '已关闭', proxyEnabled ? 'ok' : 'warn');
+      el('warning').className = data.startupError ? 'notice visible' : 'notice';
+      updateButtons();
+    });
+  }
+  function loadVersion() {
+    request('GET', '/version', null, false, function (status, response) {
+      var data = parse(response);
+      if (status === 200) { setState('core', '运行中', 'ok'); setText('version', data && data.version ? 'Mihomo ' + data.version : 'Mihomo 内核运行中'); }
+      else { setState('core', '无法连接', 'bad'); setText('version', '无法读取 Mihomo 版本'); }
+    });
+  }
+  function makeRow(title, detail) {
+    var row = document.createElement('div'), main = document.createElement('div'), name = document.createElement('div'), info = document.createElement('div'), actions = document.createElement('div');
+    row.className = 'row'; main.className = 'row-main'; name.className = 'row-title'; info.className = 'row-detail'; actions.className = 'row-actions';
+    name.textContent = title; info.textContent = detail; main.appendChild(name); main.appendChild(info); row.appendChild(main); row.appendChild(actions);
+    return { row: row, actions: actions };
+  }
+  function loadGroups() {
+    request('GET', '/proxies', null, false, function (status, response) {
+      var container = el('groups'), data = parse(response), count = 0, groups, key;
+      if (status !== 200 || !data || !data.proxies) { empty(container, '代理组暂时无法读取'); setText('groupsCount', ''); return; }
+      container.innerHTML = ''; groups = data.proxies;
+      for (key in groups) {
+        if (!groups.hasOwnProperty(key) || !groups[key].all || !groups[key].all.length) continue;
+        count++;
+        (function (groupName, group) {
+          var parts = makeRow(groupName, '当前节点：' + (group.now || '未选择'));
+          var select = document.createElement('select'), button = document.createElement('button'), i, option;
+          select.setAttribute('aria-label', groupName + ' 选择节点');
+          for (i = 0; i < group.all.length; i++) { option = document.createElement('option'); option.value = group.all[i]; option.textContent = group.all[i]; if (group.all[i] === group.now) option.selected = true; select.appendChild(option); }
+          button.className = 'button button-primary'; button.type = 'button'; button.textContent = '应用';
+          button.onclick = function () {
+            button.disabled = true;
+            request('PUT', '/proxies/' + encodeURIComponent(groupName), JSON.stringify({ name: select.value }), false, function (code) {
+              showMessage(code >= 200 && code < 300 ? '已切换 ' + groupName + ' 的节点' : '切换节点失败（HTTP ' + code + '）', !(code >= 200 && code < 300));
+              loadGroups();
+            });
+          };
+          parts.actions.appendChild(select); parts.actions.appendChild(button); container.appendChild(parts.row);
+        })(key, groups[key]);
+      }
+      if (!count) empty(container, '没有可切换的代理组');
+      setText('groupsCount', count ? count + ' 个代理组' : '');
+    });
+  }
+  function nodeKey(providerName, nodeName) { return '$' + JSON.stringify([providerName, nodeName]); }
+  function delayTone(delay) { return delay <= 200 ? 'good' : delay <= 500 ? 'medium' : 'bad'; }
+  function latestDelay(node) {
+    var history = node.history || [], i, delay;
+    for (i = history.length - 1; i >= 0; i--) {
+      delay = Number(history[i].delay);
+      if (delay > 0 && isFinite(delay)) return delay;
+    }
+    return null;
+  }
+  function updateNodeDisplay(key) {
+    var view = nodeElements[key], state = nodeStates[key];
+    if (!view || !state) return;
+    view.label.textContent = state.text;
+    view.label.className = 'latency' + (state.tone ? ' ' + state.tone : '');
+    view.button.disabled = !!state.testing || allTesting;
+  }
+  function testNode(entry, done) {
+    var key = entry.key, path = '/providers/proxies/' + encodeURIComponent(entry.provider) + '/' + encodeURIComponent(entry.name) + '/healthcheck' + delayQuery;
+    activeNodeTests++;
+    nodeStates[key] = { text: '测试中', tone: '', testing: true };
+    updateNodeDisplay(key);
+    el('testAllButton').disabled = true;
+    function finish(status, response) {
+      var data = parse(response), delay = data ? Number(data.delay) : NaN;
+      var ok = status === 200 && isFinite(delay) && delay >= 0;
+      nodeStates[key] = ok ? { text: delay + ' ms', tone: delayTone(delay), testing: false } : { text: status === 0 || status === 504 ? '超时' : '失败', tone: 'bad', testing: false };
+      activeNodeTests--;
+      updateNodeDisplay(key);
+      if (!allTesting) el('testAllButton').disabled = activeNodeTests > 0 || !nodeEntries.length;
+      if (done) done(ok);
+    }
+    request('GET', path, null, false, function (status, response) {
+      if (status === 404) request('GET', '/proxies/' + encodeURIComponent(entry.name) + '/delay' + delayQuery, null, false, finish);
+      else finish(status, response);
+    });
+  }
+  function renderNodes(providers) {
+    var container = el('nodes'), providerName, provider, node, i, parts, label, button, key, entry, delay;
+    container.innerHTML = '';
+    nodeEntries = [];
+    nodeElements = {};
+    for (providerName in providers) {
+      if (!providers.hasOwnProperty(providerName)) continue;
+      provider = providers[providerName];
+      if (String(provider.vehicleType || '').toLowerCase() === 'compatible') continue;
+      for (i = 0; provider.proxies && i < provider.proxies.length; i++) {
+        node = provider.proxies[i];
+        if (!node || !node.name || /^(direct|reject|pass)$/i.test(node.type || '')) continue;
+        key = nodeKey(providerName, node.name);
+        if (!nodeStates[key]) {
+          delay = latestDelay(node);
+          nodeStates[key] = delay === null ? { text: '未测速', tone: '', testing: false } : { text: '最近 ' + delay + ' ms', tone: delayTone(delay), testing: false };
+        }
+        parts = makeRow(node.name, providerName);
+        label = document.createElement('span'); label.className = 'latency';
+        button = document.createElement('button'); button.className = 'button test-button'; button.type = 'button'; button.textContent = '测速';
+        entry = { key: key, provider: providerName, name: node.name };
+        (function (item, trigger) {
+          trigger.onclick = function () { testNode(item, function (ok) { showMessage(item.name + (ok ? ' 测速完成' : ' 测速失败'), !ok); }); };
+        })(entry, button);
+        parts.actions.appendChild(label); parts.actions.appendChild(button);
+        container.appendChild(parts.row);
+        nodeEntries.push(entry);
+        nodeElements[key] = { label: label, button: button };
+        updateNodeDisplay(key);
+      }
+    }
+    if (!nodeEntries.length) empty(container, '没有可测速的节点');
+    setText('nodesCount', nodeEntries.length ? nodeEntries.length + ' 个节点' : '');
+    el('testAllButton').disabled = allTesting || activeNodeTests > 0 || !nodeEntries.length;
+  }
+  function testAllNodes() {
+    if (allTesting || activeNodeTests || !nodeEntries.length) return;
+    var queue = nodeEntries.slice(), next = 0, running = 0, completed = 0, passed = 0;
+    allTesting = true;
+    el('testAllButton').disabled = true;
+    el('testAllButton').textContent = '测速中 0/' + queue.length;
+    for (var key in nodeElements) if (nodeElements.hasOwnProperty(key)) updateNodeDisplay(key);
+    function pump() {
+      while (running < 4 && next < queue.length) {
+        running++;
+        testNode(queue[next++], function (ok) {
+          running--; completed++;
+          if (ok) passed++;
+          el('testAllButton').textContent = '测速中 ' + completed + '/' + queue.length;
+          if (completed === queue.length) {
+            allTesting = false;
+            el('testAllButton').textContent = '全部测速';
+            el('testAllButton').disabled = !nodeEntries.length;
+            for (var key in nodeElements) if (nodeElements.hasOwnProperty(key)) updateNodeDisplay(key);
+            showMessage('测速完成：' + passed + '/' + queue.length + ' 个节点可用', passed === 0);
+            loadGroups();
+          } else {
+            setTimeout(pump, 0);
+          }
+        });
+      }
+    }
+    pump();
+  }
+  function loadProviders() {
+    request('GET', '/providers/proxies', null, false, function (status, response) {
+      var container = el('providers'), data = parse(response), count = 0, providers, key;
+      if (status !== 200 || !data || !data.providers) {
+        empty(container, '订阅暂时无法读取'); empty(el('nodes'), '节点暂时无法读取');
+        setText('providersCount', ''); setText('nodesCount', '');
+        nodeEntries = []; nodeElements = {}; el('testAllButton').disabled = true;
+        return;
+      }
+      container.innerHTML = ''; providers = data.providers;
+      renderNodes(providers);
+      for (key in providers) {
+        if (!providers.hasOwnProperty(key) || String(providers[key].vehicleType || '').toLowerCase() === 'compatible') continue;
+        count++;
+        (function (providerName, provider) {
+          var total = provider.proxies ? provider.proxies.length : 0, parts = makeRow(providerName, total + ' 个节点'), button = document.createElement('button');
+          button.className = 'button'; button.type = 'button'; button.textContent = '更新订阅';
+          button.onclick = function () {
+            button.disabled = true;
+            request('PUT', '/providers/proxies/' + encodeURIComponent(providerName), null, false, function (code) {
+              showMessage(code >= 200 && code < 300 ? providerName + ' 已发起更新' : providerName + ' 更新失败（HTTP ' + code + '）', !(code >= 200 && code < 300));
+              loadProviders(); loadGroups();
+              if (code >= 200 && code < 300) setTimeout(function () { loadProviders(); loadGroups(); }, 3000);
+            });
+          };
+          parts.actions.appendChild(button); container.appendChild(parts.row);
+        })(key, providers[key]);
+      }
+      if (!count) empty(container, '没有订阅提供者');
+      setText('providersCount', count ? count + ' 个提供者' : '');
+    });
+  }
+  function loadAll() { loadVersion(); loadStatus(); loadGroups(); loadProviders(); }
+  function control(path, done) {
+    request('POST', controlUrl + path, null, true, function (status, response) {
+      var data = parse(response);
+      if (status !== 200 || !data) { showMessage('本机控制服务未响应', true); loadStatus(); return; }
+      showMessage(data.message || '操作完成', !data.ok);
+      if (data.code === 'proxyserver-denied') el('warning').className = 'notice visible';
+      if (data.ok && done) done();
+      if (path !== '/core/stop' || !data.ok) loadStatus();
+    });
+  }
+  el('refreshButton').onclick = loadAll;
+  el('testAllButton').onclick = testAllNodes;
+  el('proxyButton').onclick = function () { this.disabled = true; control(proxyEnabled ? '/proxy/disable' : '/proxy/enable'); };
+  el('stopButton').onclick = function () {
+    if (!window.confirm('停止 Mihomo 内核并关闭系统代理？')) return;
+    this.disabled = true;
+    control('/core/stop', function () {
+      stopped = true; clearInterval(statusTimer); coreRunning = false; proxyEnabled = false;
+      setState('core', '已停止', 'bad'); setState('proxy', '已关闭', 'warn'); setState('control', '已退出', 'warn'); updateButtons();
+    });
+  };
+  loadAll();
+  setTimeout(function () { if (!stopped) { loadProviders(); loadGroups(); } }, 4000);
+  setTimeout(function () { if (!stopped) { loadProviders(); loadGroups(); } }, 12000);
+  statusTimer = setInterval(loadStatus, 5000);
+})();
+</script>
+</body>
+</html>

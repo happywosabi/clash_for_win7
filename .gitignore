@@ -1,0 +1,14 @@
+# Local configuration can contain a private subscription token.
+/config.yaml
+/mihomo.exe
+/providers/*
+!/providers/.keep
+
+# Runtime diagnostics and downloaded Mihomo data.
+/mihomo.log
+/control.log
+/proxy-start-error.flag
+/cache.db
+/*.dat
+/*.mmdb
+/*.metadb
